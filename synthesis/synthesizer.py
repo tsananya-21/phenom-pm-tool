@@ -17,7 +17,7 @@ import re
 
 from models.evidence import EvidenceBundle
 from providers.base import LLMProvider
-from synthesis.prompts import build_system_prompt, build_user_message
+from synthesis.prompts import build_system_prompt, build_user_message, build_output_schema
 
 _EXPECTED_KEYS = frozenset(["company", "dimensions", "solutionPrototypes", "pitch"])
 
@@ -84,12 +84,24 @@ _REQUIRED_DIM_KEYS = {"hiring", "onboarding", "retention"}
 
 
 def _is_valid_output(data: dict) -> bool:
-    """Check if parsed output has the minimum expected keys."""
+    """
+    Check that parsed output has the expected shape with real content — not just
+    the right keys. Guards against models that emit hollow dimension objects
+    (e.g. {"strong": [...], "thin": true}) which technically parse but carry none
+    of the fields the UI reads.
+    """
     dims = data.get("dimensions")
     if not isinstance(dims, dict):
         return False
-    # Need at least the 3 core dimensions present
-    return bool(_REQUIRED_DIM_KEYS & dims.keys())
+    present = _REQUIRED_DIM_KEYS & dims.keys()
+    if not present:
+        return False
+    # Each core dimension present must actually carry analysis content.
+    for key in present:
+        d = dims[key]
+        if not isinstance(d, dict) or "currentState" not in d or "score" not in d:
+            return False
+    return True
 
 
 def _parse_json(raw: str) -> dict:
@@ -192,8 +204,9 @@ def _build_fallback(bundle: EvidenceBundle) -> dict:
 def synthesize(bundle: EvidenceBundle, provider: LLMProvider) -> dict:
     system = build_system_prompt()
     user = build_user_message(bundle)
+    schema = build_output_schema()
 
-    raw = provider.generate(system, user)
+    raw = provider.generate(system, user, format_schema=schema)
 
     try:
         return _parse_json(raw)
@@ -202,7 +215,7 @@ def synthesize(bundle: EvidenceBundle, provider: LLMProvider) -> dict:
 
     # Retry once with explicit JSON reminder
     try:
-        raw2 = provider.generate(system, user + _RETRY_SUFFIX)
+        raw2 = provider.generate(system, user + _RETRY_SUFFIX, format_schema=schema)
         return _parse_json(raw2)
     except (json.JSONDecodeError, ValueError):
         pass

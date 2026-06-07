@@ -7,6 +7,7 @@ Called by TavilySearchProvider.search_company().
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
 from pipeline.stage1_discovery import build_discovery_plan
@@ -64,17 +65,23 @@ def run_pipeline(company_name: str, tavily_client) -> EvidenceBundle:
     urls_to_fetch: list[str] = []
     domain: str | None = None
 
-    for query in plan.queries:
+    # Run all discovery queries concurrently — they're independent network calls.
+    def _run_query(query) -> list[dict]:
         try:
             results = tavily_client.search(
                 query=query.query,
                 max_results=query.max_results,
                 include_answer=False,
             )
-            items = results.get("results", [])
+            return results.get("results", [])
         except Exception:
-            items = []
+            return []
 
+    with ThreadPoolExecutor(max_workers=min(8, len(plan.queries) or 1)) as ex:
+        query_items = list(ex.map(_run_query, plan.queries))
+
+    # Process results in plan order so downstream behavior stays deterministic.
+    for query, items in zip(plan.queries, query_items):
         all_serp_results.setdefault(query.source_type, []).extend(items)
 
         for item in items:

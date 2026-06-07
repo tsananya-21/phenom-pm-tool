@@ -11,7 +11,12 @@ class OllamaProvider(LLMProvider):
         self.base_url = base_url.rstrip("/")
         self.model = model
 
-    def generate(self, system_prompt: str, user_message: str) -> str:
+    def generate(
+        self,
+        system_prompt: str,
+        user_message: str,
+        format_schema: dict | None = None,
+    ) -> str:
         payload = {
             "model": self.model,
             "messages": [
@@ -19,14 +24,16 @@ class OllamaProvider(LLMProvider):
                 {"role": "user", "content": user_message},
             ],
             "stream": False,
-            # Note: format:"json" is intentionally omitted — small models with JSON mode
-            # tend to echo the input JSON rather than generate the output schema.
-            # We rely on the tolerant parser in synthesizer.py to extract valid JSON instead.
             "options": {
                 "temperature": 0.1,
                 "num_predict": 4096,
             },
         }
+        # Structured outputs: when a JSON Schema is supplied, Ollama constrains
+        # decoding to it. This is stronger than format:"json" (which lets small
+        # models echo the input shape) — the model must emit exactly this schema.
+        if format_schema is not None:
+            payload["format"] = format_schema
         try:
             resp = httpx.post(
                 f"{self.base_url}/api/chat",

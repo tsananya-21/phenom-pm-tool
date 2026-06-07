@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import time
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from urllib.parse import urlparse
@@ -123,52 +124,75 @@ def _extract_text(html: str, url: str) -> tuple[str, str]:
     return title, body[:8000]
 
 
-def fetch_pages(urls: list[str]) -> dict[str, ParsedPage]:
-    """Fetch and parse a list of URLs. Respects robots.txt and rate limits."""
-    results: dict[str, ParsedPage] = {}
-    fetched_count = 0
+_MAX_FETCH_WORKERS = 10
 
+
+def _fetch_one(url: str, client: httpx.Client) -> ParsedPage:
+    """Fetch and parse a single URL. Assumes blocked-domain check already passed."""
+    if not _robots_allowed(url, client):
+        return ParsedPage(
+            url=url, title="", body_text="", raw_html="",
+            status=0, fetch_error="robots.txt disallows",
+        )
+
+    _rate_limit(url)
+
+    try:
+        resp = client.get(url)
+        html = resp.text
+        title, body = _extract_text(html, url)
+        return ParsedPage(
+            url=url,
+            title=title,
+            body_text=body,
+            raw_html=html[:50000],  # keep first 50k for ATS markup pass
+            status=resp.status_code,
+        )
+    except httpx.TimeoutException:
+        return ParsedPage(
+            url=url, title="", body_text="", raw_html="",
+            status=0, fetch_error="Timeout",
+        )
+    except Exception as e:
+        return ParsedPage(
+            url=url, title="", body_text="", raw_html="",
+            status=0, fetch_error=str(e)[:200],
+        )
+
+
+def _fetch_domain(domain_urls: list[str]) -> dict[str, ParsedPage]:
+    """Fetch all URLs for one domain sequentially (preserves robots cache + rate limit)."""
+    local: dict[str, ParsedPage] = {}
     with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True, timeout=15.0) as client:
-        for url in urls:
-            if fetched_count >= _MAX_PAGES:
-                break
-            if _is_blocked(url):
-                results[url] = ParsedPage(
-                    url=url, title="", body_text="", raw_html="",
-                    status=0, fetch_error="Domain blocked (ToS boundary)",
-                )
-                continue
+        for url in domain_urls:
+            local[url] = _fetch_one(url, client)
+    return local
 
-            if not _robots_allowed(url, client):
-                results[url] = ParsedPage(
-                    url=url, title="", body_text="", raw_html="",
-                    status=0, fetch_error="robots.txt disallows",
-                )
-                continue
 
-            _rate_limit(url)
+def fetch_pages(urls: list[str]) -> dict[str, ParsedPage]:
+    """
+    Fetch and parse a list of URLs. Respects robots.txt and rate limits.
 
-            try:
-                resp = client.get(url)
-                html = resp.text
-                title, body = _extract_text(html, url)
-                results[url] = ParsedPage(
-                    url=url,
-                    title=title,
-                    body_text=body,
-                    raw_html=html[:50000],  # keep first 50k for ATS markup pass
-                    status=resp.status_code,
-                )
-                fetched_count += 1
-            except httpx.TimeoutException:
-                results[url] = ParsedPage(
-                    url=url, title="", body_text="", raw_html="",
-                    status=0, fetch_error="Timeout",
-                )
-            except Exception as e:
-                results[url] = ParsedPage(
-                    url=url, title="", body_text="", raw_html="",
-                    status=0, fetch_error=str(e)[:200],
-                )
+    URLs are grouped by domain: each domain is fetched sequentially (so the
+    per-domain rate limit and robots cache still hold), while different domains
+    are fetched concurrently for speed.
+    """
+    results: dict[str, ParsedPage] = {}
+
+    # Cap total pages, dropping blocked domains up front (they need no fetch).
+    by_domain: dict[str, list[str]] = {}
+    for url in list(dict.fromkeys(urls))[:_MAX_PAGES]:
+        if _is_blocked(url):
+            results[url] = ParsedPage(
+                url=url, title="", body_text="", raw_html="",
+                status=0, fetch_error="Domain blocked (ToS boundary)",
+            )
+            continue
+        by_domain.setdefault(_domain(url), []).append(url)
+
+    if by_domain:
+        with ThreadPoolExecutor(max_workers=min(_MAX_FETCH_WORKERS, len(by_domain))) as ex:
+            for partial in ex.map(_fetch_domain, by_domain.values()):
+                results.update(partial)
 
     return results

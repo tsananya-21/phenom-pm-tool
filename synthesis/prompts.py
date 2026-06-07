@@ -98,6 +98,93 @@ def build_system_prompt() -> str:
     return SYSTEM_PROMPT_TEMPLATE.format(catalog=catalog)
 
 
+# JSON Schema mirroring the OUTPUT SCHEMA above. Passed to Ollama as `format` so
+# decoding is grammar-constrained to this exact shape — small models can no longer
+# echo input-bundle keys (e.g. "strong"/"thin") into the dimension objects.
+def _dimension_schema() -> dict:
+    return {
+        "type": "object",
+        "properties": {
+            "score": {"type": "integer"},
+            "currentState": {"type": "string"},
+            "evidence": {"type": "array", "items": {"type": "string"}},
+            "gaps": {"type": "array", "items": {"type": "string"}},
+            "coverage": {"type": "string", "enum": ["high", "medium", "low", "inferred"]},
+        },
+        "required": ["score", "currentState", "evidence", "gaps", "coverage"],
+        "additionalProperties": False,
+    }
+
+
+def build_output_schema() -> dict:
+    dim = _dimension_schema()
+    dim_keys = ["hiring", "onboarding", "retention", "people_analytics", "hrit", "internal_mobility"]
+    return {
+        "type": "object",
+        "properties": {
+            "company": {"type": "string"},
+            "industry": {"type": "string"},
+            "companySize": {"type": "string"},
+            "description": {"type": "string"},
+            "revenueHistory": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {"period": {"type": "string"}, "amount": {"type": "string"}},
+                    "required": ["period", "amount"],
+                },
+            },
+            "detectedStack": {
+                "type": "object",
+                "properties": {
+                    "ats": {"type": ["string", "null"]},
+                    "confidence": {"type": "number"},
+                    "source": {"type": ["string", "null"]},
+                },
+                "required": ["ats", "confidence", "source"],
+            },
+            "dimensions": {
+                "type": "object",
+                "properties": {k: dim for k in dim_keys},
+                "required": dim_keys,
+                "additionalProperties": False,
+            },
+            "solutionPrototypes": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "phenomProduct": {"type": "string"},
+                        "gap": {"type": "string"},
+                        "evidenceRef": {"type": "string"},
+                        "whatItDoes": {"type": "string"},
+                        "successMetric": {"type": "string"},
+                        "priority": {"type": "string", "enum": ["high", "medium", "low"]},
+                    },
+                    "required": ["phenomProduct", "gap", "whatItDoes", "successMetric", "priority"],
+                },
+            },
+            "topOpportunity": {"type": "string"},
+            "pitch": {
+                "type": "object",
+                "properties": {
+                    "hook": {"type": "string"},
+                    "strengths": {"type": "array", "items": {"type": "string"}},
+                    "weaknesses": {"type": "array", "items": {"type": "string"}},
+                    "opportunities": {"type": "array", "items": {"type": "string"}},
+                    "roi": {"type": "string"},
+                    "cta": {"type": "string"},
+                },
+                "required": ["hook", "strengths", "weaknesses", "opportunities", "roi", "cta"],
+            },
+        },
+        "required": [
+            "company", "industry", "companySize", "description", "detectedStack",
+            "dimensions", "solutionPrototypes", "topOpportunity", "pitch",
+        ],
+    }
+
+
 def build_user_message(bundle: EvidenceBundle) -> str:
     """
     Convert EvidenceBundle to a natural-language briefing document.

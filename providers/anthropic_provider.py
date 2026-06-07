@@ -23,7 +23,14 @@ class AnthropicProvider(LLMProvider):
         import anthropic
         self._client = anthropic.Anthropic(api_key=api_key)
 
-    def generate(self, system_prompt: str, user_message: str) -> str:
+    def generate(
+        self,
+        system_prompt: str,
+        user_message: str,
+        format_schema: dict | None = None,
+    ) -> str:
+        # format_schema is accepted for interface parity; Claude adheres to the
+        # schema described in the system prompt without grammar constraints.
         # TODO: split system_prompt into [catalog_block (cacheable), instruction_block]
         # and annotate catalog_block with cache_control={"type": "ephemeral"} to
         # activate Anthropic prompt caching. Saves ~70-90% on repeated calls.

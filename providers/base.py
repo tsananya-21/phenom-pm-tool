@@ -5,8 +5,18 @@ from abc import ABC, abstractmethod
 
 class LLMProvider(ABC):
     @abstractmethod
-    def generate(self, system_prompt: str, user_message: str) -> str:
-        """Return the model's text response (expected to be JSON)."""
+    def generate(
+        self,
+        system_prompt: str,
+        user_message: str,
+        format_schema: dict | None = None,
+    ) -> str:
+        """
+        Return the model's text response (expected to be JSON).
+
+        format_schema: optional JSON Schema. Providers that support structured
+        outputs (e.g. Ollama) should constrain decoding to it; others may ignore it.
+        """
         ...
 
 
