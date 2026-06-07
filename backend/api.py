@@ -11,12 +11,18 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from config.settings import load_config
 from search.base import get_search_provider
 from providers.base import get_llm_provider
 from synthesis.synthesizer import synthesize
+
+# Built frontend (copied here in the Docker image). Absent in local dev, where
+# Vite serves the frontend and this stays API-only.
+_STATIC_DIR = Path(__file__).parent / "static"
 
 # Suggested companies for the "Try" row on the home page.
 SUGGESTED_COMPANIES = ["Meta", "Apple", "Amazon", "Netflix", "Google", "Microsoft"]
@@ -61,3 +67,23 @@ def research(req: ResearchRequest):
         "bundle": bundle.model_dump(mode="json"),
         "analysis": analysis,
     }
+
+
+# ── Serve the built frontend (production / Docker) ──────────────────────────────
+# Registered after the /api routes so they keep priority. The catch-all returns
+# index.html for client-side routes (e.g. /c/:slug) so deep links work.
+if _STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=_STATIC_DIR / "assets"), name="assets")
+
+    @app.get("/")
+    def _index():
+        return FileResponse(_STATIC_DIR / "index.html")
+
+    @app.get("/{full_path:path}")
+    def _spa(full_path: str):
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+        candidate = _STATIC_DIR / full_path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_STATIC_DIR / "index.html")

@@ -35,3 +35,6 @@ frontend/.vite/
 .idea/
 *.swp
 *.swo
+
+# Backend-served frontend build (produced in Docker)
+backend/static/

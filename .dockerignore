@@ -1,0 +1,25 @@
+# Secrets — provided via Hugging Face Space secrets, never baked into the image
+.env
+**/.env
+
+# Node / frontend build artifacts (frontend is rebuilt inside the image)
+frontend/node_modules
+frontend/dist
+**/node_modules
+
+# Python caches
+**/__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# VCS / editor / OS
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+# Docs / misc not needed at runtime
+ideas
