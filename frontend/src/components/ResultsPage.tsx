@@ -1,12 +1,11 @@
-import { type ReactNode, useState, useEffect, useRef } from 'react'
+import { type ReactNode } from 'react'
 import {
   ExternalLink,
   Briefcase, Users, Star, Newspaper, FileText, Globe,
-  MessageSquarePlus,
 } from 'lucide-react'
-import type { ResearchResult, DimensionData, Prototype, PitchItem, Signal, RevenuePoint } from '../types'
+import type { ResearchResult, DimensionData, PitchItem, Signal, RevenuePoint } from '../types'
 import {
-  to100, fitLabel, fitScoreColor,
+  to100, fitLabel, fitScoreHex, coverageHex,
   coverageLabel, bulletText,
 } from '../utils'
 
@@ -61,14 +60,39 @@ function SourceLink({ url, sourceType }: { url: string; sourceType?: string }) {
   )
 }
 
-// ── Signal bullet with source icon ───────────────────────────────────────────
+// ── Fit score gauge ───────────────────────────────────────────────────────────
 
-function SignalBullet({ content, url, sourceType }: { content: string; url: string; sourceType?: string }) {
+function FitGauge({ score }: { score: number }) {
+  const size = 92, stroke = 7
+  const r = (size - stroke) / 2
+  const circ = 2 * Math.PI * r
+  const pct = Math.max(0, Math.min(100, score)) / 100
+  const color = fitScoreHex(score)
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={C.border} strokeWidth={stroke} />
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke={color} strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-2xl font-bold tabular-nums" style={{ color }}>{score}</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Signal bullet ─────────────────────────────────────────────────────────────
+// Sources are listed in the overview's "Sources" footer, so no per-bullet link.
+
+function SignalBullet({ content }: { content: string }) {
   return (
     <div className="flex gap-2 text-xs leading-relaxed" style={{ color: C.text }}>
       <span className="flex-shrink-0 mt-0.5" style={{ color: C.muted }}>·</span>
       <span className="flex-1">{content}</span>
-      <SourceLink url={url} sourceType={sourceType} />
     </div>
   )
 }
@@ -138,7 +162,7 @@ function Divider() {
 
 function TalentCard({ label, d, signals }: { label: string; d: DimensionData; signals: Signal[] }) {
   const uniqSources = signals.reduce((acc, s) => {
-    if (!acc.some(x => x.url === s.source_url)) acc.push({ url: s.source_url, type: s.source_type })
+    if (!acc.some(x => x.type === s.source_type)) acc.push({ url: s.source_url, type: s.source_type })
     return acc
   }, [] as { url: string; type: string }[]).slice(0, 4)
 
@@ -148,7 +172,10 @@ function TalentCard({ label, d, signals }: { label: string; d: DimensionData; si
          onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.borderColor = C.borderLt)}
          onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.borderColor = C.border)}
     >
-      <h3 className="text-sm font-semibold mb-1" style={{ color: C.textBright }}>{label}</h3>
+      <div className="flex items-center gap-2 mb-1">
+        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: coverageHex(d.coverage) }} />
+        <h3 className="text-sm font-semibold" style={{ color: C.textBright }}>{label}</h3>
+      </div>
       <p className="text-xs mb-3" style={{ color: C.dim }}>{coverageLabel(d.coverage)}</p>
       <p className="text-sm leading-relaxed" style={{ color: C.text }}>{d.currentState || 'No data.'}</p>
       {d.gaps && d.gaps.length > 0 && (
@@ -184,41 +211,11 @@ function TalentCard({ label, d, signals }: { label: string; d: DimensionData; si
   )
 }
 
-// ── Prototype card ────────────────────────────────────────────────────────────
-
-function ProtoCard({ proto }: { proto: Prototype }) {
-  return (
-    <div className="rounded-xl p-4" style={{ border: `1px solid ${C.border}` }}>
-      <div className="flex items-start gap-2 mb-2.5">
-        {proto.priority === 'high' && (
-          <span className="text-xs rounded px-2 py-0.5 flex-shrink-0 mt-0.5"
-                style={{ background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }}>
-            Priority
-          </span>
-        )}
-        <div className="min-w-0">
-          <span className="text-sm font-semibold" style={{ color: C.textBright }}>{proto.phenomProduct}</span>
-          <span className="mx-2 text-xs" style={{ color: C.border }}>·</span>
-          <span className="text-sm" style={{ color: C.dim }}>{proto.gap}</span>
-          {proto.evidenceRef && <SourceLink url={proto.evidenceRef} sourceType="news" />}
-        </div>
-      </div>
-      <p className="text-sm leading-relaxed" style={{ color: C.text }}>{proto.whatItDoes}</p>
-      {proto.successMetric && (
-        <p className="mt-2.5 text-xs" style={{ color: C.dim }}>
-          <span className="font-semibold" style={{ color: C.muted }}>Success metric: </span>
-          {proto.successMetric}
-        </p>
-      )}
-    </div>
-  )
-}
-
 // ── Summary column ────────────────────────────────────────────────────────────
 
 function SummaryCol({ title, items, accentColor }: { title: string; items: PitchItem[]; accentColor: string }) {
   return (
-    <div className="pl-4 py-1" style={{ borderLeft: `2px solid ${accentColor}` }}>
+    <div className="rounded-xl p-4" style={{ background: C.surface, border: `1px solid ${C.border}`, borderLeft: `2px solid ${accentColor}` }}>
       <p className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: C.dim }}>{title}</p>
       <ul className="space-y-2">
         {items.map((item, i) => (
@@ -231,97 +228,13 @@ function SummaryCol({ title, items, accentColor }: { title: string; items: Pitch
   )
 }
 
-// ── Text-selection comment popup ──────────────────────────────────────────────
-
-function SelectionPopup({ notes, onNotesChange }: { notes: string; onNotesChange: (t: string) => void }) {
-  const [sel, setSel] = useState<{ text: string; x: number; y: number } | null>(null)
-  const [comment, setComment] = useState('')
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (panelRef.current?.contains(e.target as Node)) return
-      const selection = window.getSelection()
-      const text = selection?.toString().trim() || ''
-      if (text.length < 4) { setSel(null); return }
-      try {
-        const range = selection!.getRangeAt(0)
-        const rect = range.getBoundingClientRect()
-        setSel({ text, x: rect.left + rect.width / 2, y: rect.top })
-      } catch { setSel(null) }
-    }
-    document.addEventListener('mouseup', handler)
-    return () => document.removeEventListener('mouseup', handler)
-  }, [])
-
-  if (!sel) return null
-
-  const excerpt = sel.text.length > 100 ? sel.text.slice(0, 100) + '…' : sel.text
-  const left = Math.max(10, Math.min(sel.x - 128, window.innerWidth - 276))
-  const top  = sel.y - 8
-
-  const save = () => {
-    if (!comment.trim()) return
-    const entry = `> "${excerpt}"\n${comment.trim()}`
-    onNotesChange(notes ? notes + '\n\n' + entry : entry)
-    setSel(null)
-    setComment('')
-    window.getSelection()?.removeAllRanges()
-  }
-
-  const dismiss = () => { setSel(null); setComment('') }
-
-  return (
-    <div
-      ref={panelRef}
-      className="fixed z-[200] w-64 rounded-xl shadow-2xl p-3 scale-in"
-      style={{ left, top, transform: 'translateY(-100%)', background: C.surface, border: `1px solid ${C.borderLt}` }}
-    >
-      <div className="flex items-start gap-1.5 mb-2">
-        <MessageSquarePlus className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: C.violetLt }} />
-        <p className="text-xs italic leading-relaxed flex-1 truncate" style={{ color: C.dim }}>"{excerpt}"</p>
-      </div>
-      <textarea
-        className="w-full rounded-lg px-2.5 py-2 text-xs outline-none resize-none transition-colors"
-        style={{ background: '#08080f', border: `1px solid ${C.border}`, color: C.textBright }}
-        placeholder="Add a comment..."
-        rows={3}
-        autoFocus
-        value={comment}
-        onChange={e => setComment(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) save() }}
-        onFocus={e => (e.target.style.borderColor = C.violet)}
-        onBlur={e => (e.target.style.borderColor = C.border)}
-      />
-      <div className="flex justify-end gap-2 mt-2">
-        <button onClick={dismiss} className="text-xs transition-colors" style={{ color: C.muted }}
-          onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = C.dim)}
-          onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = C.muted)}>
-          Cancel
-        </button>
-        <button
-          onClick={save}
-          disabled={!comment.trim()}
-          className="text-xs font-semibold px-2.5 py-1 rounded-md transition-colors"
-          style={{ background: comment.trim() ? C.violet : C.raised, color: comment.trim() ? '#fff' : C.muted }}
-        >
-          Save to notes
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 interface ResultsPageProps {
   result: ResearchResult
-  notes: string
-  onNotesChange: (text: string) => void
-  onResearch: (company: string) => void
 }
 
-export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) {
+export function ResultsPage({ result }: ResultsPageProps) {
   const { bundle, analysis, fitScore } = result
   const company = analysis.company || bundle.company_name
   const dims = analysis.dimensions || {}
@@ -391,27 +304,16 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
   return (
     <div className="max-w-5xl mx-auto px-8 py-10 slide-up">
 
-      {/* Text selection popup — globally active on this page */}
-      <SelectionPopup notes={notes} onNotesChange={onNotesChange} />
-
       {/* Company header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1 min-w-0 pr-6">
           <h1 className="text-4xl font-bold tracking-tight leading-tight" style={{ color: C.textBright }}>
             {company}
           </h1>
-          {bundle.is_mock && (
-            <span className="inline-block mt-2 text-xs rounded px-2 py-0.5"
-                  style={{ color: C.muted, border: `1px solid ${C.border}` }}>
-              Mock data
-            </span>
-          )}
         </div>
-        <div className="flex-shrink-0 text-right">
-          <div className={`text-5xl font-bold tabular-nums ${fitScoreColor(fitScore)}`}>
-            {fitScore}
-          </div>
-          <div className="text-xs mt-1" style={{ color: C.dim }}>
+        <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+          <FitGauge score={fitScore} />
+          <div className="text-xs" style={{ color: C.dim }}>
             Phenom fit · {fitLabel(fitScore)}
           </div>
         </div>
@@ -419,8 +321,8 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
 
       {/* Top opportunity */}
       {analysis.topOpportunity && (
-        <div className="pl-4 py-0.5 mb-6" style={{ borderLeft: `2px solid ${C.violet}` }}>
-          <p className="text-sm" style={{ color: C.text }}>
+        <div className="rounded-lg pl-4 pr-4 py-3 mb-6" style={{ borderLeft: `2px solid ${C.violet}`, background: 'rgba(124,58,237,0.07)' }}>
+          <p className="text-sm leading-relaxed" style={{ color: C.text }}>
             <span className="font-semibold" style={{ color: C.textBright }}>Top opportunity: </span>
             {analysis.topOpportunity}
           </p>
@@ -463,7 +365,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
 
           {analysis.description && (
             <OverviewSection title="What they do">
-              <p className="text-sm leading-relaxed" style={{ color: C.text }}>{analysis.description}</p>
+              <p className="text-sm leading-relaxed max-w-[70ch]" style={{ color: C.text }}>{analysis.description}</p>
             </OverviewSection>
           )}
 
@@ -474,7 +376,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
               )}
               <div className="space-y-1.5">
                 {financialSignals.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -484,7 +386,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="AI strategy">
               <div className="space-y-1.5">
                 {newsByCategory.ai.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -494,7 +396,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="Leadership">
               <div className="space-y-1.5">
                 {newsByCategory.leadership.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -504,7 +406,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="Layoffs">
               <div className="space-y-1.5">
                 {newsByCategory.layoffs.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -514,7 +416,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="Hiring">
               <div className="space-y-1.5">
                 {newsByCategory.hiring.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -524,7 +426,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="M&A">
               <div className="space-y-1.5">
                 {maSignals.map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -534,7 +436,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             <OverviewSection title="Latest news">
               <div className="space-y-1.5">
                 {newsByCategory.general.slice(0, 5).map((s, i) => (
-                  <SignalBullet key={i} content={s.content} url={s.source_url} sourceType={s.source_type} />
+                  <SignalBullet key={i} content={s.content} />
                 ))}
               </div>
             </OverviewSection>
@@ -568,7 +470,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
 
       {/* Talent operations */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold mb-4" style={{ color: C.dim }}>Talent operations</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: C.text }}>Talent operations</h2>
         <div className="grid grid-cols-2 gap-3">
           {[...mainDims, ...extraDims].map(([key, label]) => {
             const d = dims[key]
@@ -582,46 +484,49 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
 
       {/* Sales pitch */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4" style={{ color: C.dim }}>Sales pitch</h2>
-        <ul className="space-y-3">
-          {pitch.hook && (
-            <li className="flex gap-3 text-sm leading-relaxed" style={{ color: C.text }}>
-              <span className="flex-shrink-0 mt-0.5" style={{ color: C.muted }}>·</span>
-              <span>{pitch.hook}</span>
-            </li>
-          )}
+        <h2 className="text-lg font-semibold mb-4" style={{ color: C.text }}>Sales pitch</h2>
+        {pitch.hook && (
+          <p className="text-base leading-relaxed mb-6 max-w-[72ch]" style={{ color: C.textBright }}>
+            {pitch.hook}
+          </p>
+        )}
+        <ul className="space-y-4 max-w-[72ch]">
           {prototypes.map((proto, i) => (
             <li key={i} className="flex gap-3 text-sm leading-relaxed" style={{ color: C.text }}>
-              <span className="flex-shrink-0 mt-0.5" style={{ color: C.muted }}>·</span>
+              <span className="flex-shrink-0 mt-[7px] w-1.5 h-1.5 rounded-full" style={{ background: C.violet }} />
               <span>
                 <span className="font-semibold" style={{ color: C.textBright }}>{proto.phenomProduct}: </span>
                 {proto.whatItDoes}
                 {proto.successMetric && (
-                  <span className="block mt-1">{proto.successMetric}</span>
+                  <span className="flex items-start gap-1.5 mt-1.5 text-xs" style={{ color: C.violetLt }}>
+                    <span aria-hidden="true">→</span>
+                    <span>{proto.successMetric}</span>
+                  </span>
                 )}
               </span>
             </li>
           ))}
           {pitch.roi && (
             <li className="flex gap-3 text-sm leading-relaxed" style={{ color: C.text }}>
-              <span className="flex-shrink-0 mt-0.5" style={{ color: C.muted }}>·</span>
+              <span className="flex-shrink-0 mt-[7px] w-1.5 h-1.5 rounded-full" style={{ background: C.violet }} />
               <span>{pitch.roi}</span>
             </li>
           )}
-          {pitch.cta && (
-            <li className="flex gap-3 text-sm leading-relaxed" style={{ color: C.text }}>
-              <span className="flex-shrink-0 mt-0.5" style={{ color: C.muted }}>·</span>
-              <span><span className="font-semibold" style={{ color: C.textBright }}>Next step: </span>{pitch.cta}</span>
-            </li>
-          )}
         </ul>
+        {pitch.cta && (
+          <div className="mt-6 rounded-lg px-4 py-3 max-w-[72ch] flex flex-wrap gap-x-2 gap-y-1 text-sm"
+               style={{ background: 'rgba(124,58,237,0.08)', border: `1px solid ${C.border}` }}>
+            <span className="font-semibold" style={{ color: C.violetLt }}>Next step</span>
+            <span style={{ color: C.text }}>{pitch.cta}</span>
+          </div>
+        )}
       </section>
 
       <Divider />
 
       {/* Summary — final section */}
       <section className="mb-12">
-        <h2 className="text-lg font-semibold mb-5" style={{ color: C.dim }}>Summary</h2>
+        <h2 className="text-lg font-semibold mb-5" style={{ color: C.text }}>Summary</h2>
         <div className="grid grid-cols-3 gap-6">
           <SummaryCol title="Doing well"    items={strengths}    accentColor="#34d399" />
           <SummaryCol title="Can do better" items={weaknesses}   accentColor="#fbbf24" />

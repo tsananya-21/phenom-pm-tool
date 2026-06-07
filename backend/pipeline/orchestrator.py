@@ -67,12 +67,18 @@ def run_pipeline(company_name: str, tavily_client) -> EvidenceBundle:
 
     # Run all discovery queries concurrently — they're independent network calls.
     def _run_query(query) -> list[dict]:
+        kwargs = {
+            "query": query.query,
+            "max_results": query.max_results,
+            "include_answer": False,
+        }
+        # Recency: news queries are limited to the last N days via Tavily's news topic.
+        if getattr(query, "topic", "general") == "news":
+            kwargs["topic"] = "news"
+            if getattr(query, "days", None):
+                kwargs["days"] = query.days
         try:
-            results = tavily_client.search(
-                query=query.query,
-                max_results=query.max_results,
-                include_answer=False,
-            )
+            results = tavily_client.search(**kwargs)
             return results.get("results", [])
         except Exception:
             return []

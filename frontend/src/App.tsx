@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { NotebookPen, X, Download } from 'lucide-react'
+import { NotebookPen, X, Download, Check } from 'lucide-react'
 import { Home } from './components/Home'
 import { Sidebar } from './components/Sidebar'
 import { ResultsPage } from './components/ResultsPage'
@@ -8,13 +8,89 @@ import { researchCompany } from './api'
 import { fitScore as calcFitScore, buildExportMarkdown, slug } from './utils'
 import type { ResearchResult } from './types'
 
+const LOADING_STEPS = [
+  'Searching the web',
+  'Reading careers pages & job posts',
+  'Detecting their ATS',
+  'Analyzing talent operations',
+  'Writing the sales pitch',
+]
+
 function LoadingScreen({ company }: { company: string }) {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    // Lock body scroll so the tall page behind this full-screen overlay doesn't
+    // show a dead scrollbar while loading.
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    // Time-based progression — no real per-stage events from the backend, so the
+    // dwell times roughly track the pipeline (fast search, slow synthesis). The
+    // final step holds until the request resolves and this screen unmounts.
+    const dwell = [5000, 5000, 4000, 40000]
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let elapsed = 0
+    dwell.forEach((d, i) => {
+      elapsed += d
+      timers.push(setTimeout(() => setStep(i + 1), elapsed))
+    })
+    return () => {
+      timers.forEach(clearTimeout)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [])
+
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center z-50 fade-in" style={{ background: '#08080f' }}>
-      <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
-      <p className="text-sm" style={{ color: '#6060a0' }}>
-        Researching <span className="text-white font-medium">{company}</span>
-      </p>
+    <div className="fixed inset-0 flex flex-col items-center justify-center z-[100] overflow-hidden fade-in" style={{ background: '#08080f' }}>
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(circle at 50% 42%, rgba(124,58,237,0.16), transparent 60%)' }}
+      />
+
+      <div className="relative flex flex-col items-center text-center">
+        <span className="text-sm font-semibold tracking-[0.25em] text-violet-400 uppercase mb-3">
+          Researching
+        </span>
+        <h1 className="text-5xl sm:text-6xl font-bold text-white tracking-tight mb-3">{company}</h1>
+        <p className="text-base mb-12" style={{ color: '#6a6aa0' }}>This usually takes a minute…</p>
+
+        {/* Timeline */}
+        <div className="relative flex flex-col gap-6 text-left">
+          {/* connecting track */}
+          <div className="absolute left-[11px] top-3 bottom-3 w-px" style={{ background: '#20203a' }} />
+          {LOADING_STEPS.map((label, i) => {
+            const done = i < step
+            const active = i === step
+            return (
+              <div key={i} className="relative flex items-center gap-4">
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-colors"
+                  style={{
+                    background: done ? 'rgba(52,211,153,0.12)' : active ? 'rgba(124,58,237,0.18)' : '#0f0f1a',
+                    border: `1px solid ${done ? '#34d399' : active ? '#7c3aed' : '#20203a'}`,
+                  }}
+                >
+                  {done ? (
+                    <Check className="w-3.5 h-3.5" style={{ color: '#34d399' }} />
+                  ) : active ? (
+                    <span className="w-3 h-3 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#3a3a6a' }} />
+                  )}
+                </span>
+                <span
+                  className="text-lg"
+                  style={{ color: done ? '#8080c0' : active ? '#e8e8ff' : '#4a4a78', fontWeight: active ? 600 : 400 }}
+                >
+                  {label}{active ? '…' : ''}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
@@ -46,6 +122,27 @@ function CompanyView({
   const { slug: routeSlug } = useParams()
   const navigate = useNavigate()
   const [notesOpen, setNotesOpen] = useState(false)
+  const [notesWidth, setNotesWidth] = useState(340)
+  const [dragging, setDragging] = useState(false)
+
+  // Drag-to-resize the notes drawer (drag its left edge).
+  useEffect(() => {
+    if (!dragging) return
+    const onMove = (e: MouseEvent) => {
+      setNotesWidth(Math.min(Math.max(window.innerWidth - e.clientX, 280), 640))
+    }
+    const onUp = () => setDragging(false)
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'ew-resize'
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.userSelect = ''
+      document.body.style.cursor = ''
+    }
+  }, [dragging])
 
   const result = history.find(h => slug(h.bundle.company_name) === routeSlug)
 
@@ -81,21 +178,15 @@ function CompanyView({
       />
 
       <main
-        className={`flex-1 min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'ml-12' : 'ml-60'}`}
-        style={{ marginRight: notesOpen ? '288px' : '0' }}
+        className={`flex-1 min-h-screen ${sidebarCollapsed ? 'ml-12' : 'ml-60'}`}
+        style={{ marginRight: notesOpen ? notesWidth : 0, transition: dragging ? 'none' : 'all 0.3s' }}
       >
-        <ResultsPage
-          key={company}
-          result={result}
-          notes={currentNotes}
-          onNotesChange={text => onUpdateNotes(company, text)}
-          onResearch={onResearch}
-        />
+        <ResultsPage key={company} result={result} />
       </main>
 
       {/* Top-right fixed toolbar */}
       <div className="fixed top-4 z-50 flex items-center gap-2"
-           style={{ right: notesOpen ? '304px' : '16px', transition: 'right 0.3s' }}>
+           style={{ right: notesOpen ? notesWidth + 16 : 16, transition: dragging ? 'none' : 'right 0.3s' }}>
         {/* Export — prominent labeled button */}
         <button
           onClick={handleExport}
@@ -125,27 +216,46 @@ function CompanyView({
         </button>
       </div>
 
-      {/* Notes — right side drawer */}
+      {/* Notes — right side drawer (resizable) */}
       <div
-        className="fixed top-0 right-0 h-screen z-40 flex flex-col transition-all duration-300"
+        className="fixed top-0 right-0 h-screen z-40 flex flex-col"
         style={{
-          width: notesOpen ? '288px' : '0',
+          width: notesOpen ? notesWidth : 0,
           overflow: 'hidden',
           background: '#0a0a14',
           borderLeft: notesOpen ? '1px solid #1e1e38' : 'none',
+          transition: dragging ? 'none' : 'width 0.3s',
         }}
       >
-        {/* Inner wrapper keeps content at fixed width while outer animates */}
-        <div className="flex flex-col h-full" style={{ minWidth: '288px' }}>
+        {/* Resize handle — drag the left edge */}
+        {notesOpen && (
+          <div
+            onMouseDown={() => setDragging(true)}
+            title="Drag to resize"
+            className="absolute left-0 top-0 h-full w-1.5 cursor-ew-resize z-20 transition-colors"
+            style={{ background: dragging ? '#7c3aed' : 'transparent' }}
+            onMouseEnter={e => { if (!dragging) (e.currentTarget as HTMLDivElement).style.background = '#2a2a50' }}
+            onMouseLeave={e => { if (!dragging) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+          />
+        )}
+        {/* Inner wrapper keeps content width fixed while outer animates open/closed */}
+        <div className="flex flex-col h-full" style={{ minWidth: notesWidth }}>
           <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0"
                style={{ borderBottom: '1px solid #1e1e38' }}>
-            <div>
-              <h3 className="text-sm font-semibold text-white">Notes</h3>
-              <p className="text-xs mt-0.5" style={{ color: '#a0a0cc' }}>{company}</p>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid #2a2a50' }}>
+                <NotebookPen className="w-3.5 h-3.5" style={{ color: '#a78bfa' }} />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-white leading-tight">Notes</h3>
+                <p className="text-xs truncate" style={{ color: '#8585b8' }}>{company}</p>
+              </div>
             </div>
             <button
               onClick={() => setNotesOpen(false)}
-              className="transition-colors"
+              title="Close notes"
+              className="transition-colors flex-shrink-0"
               style={{ color: '#8585b8' }}
               onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = '#a78bfa')}
               onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = '#8585b8')}
@@ -153,20 +263,17 @@ function CompanyView({
               <X className="w-4 h-4" />
             </button>
           </div>
-          <textarea
-            value={currentNotes}
-            onChange={e => onUpdateNotes(company, e.target.value)}
-            placeholder="Add notes, talking points, or follow-up actions."
-            autoFocus={notesOpen}
-            className="flex-1 w-full px-5 py-4 text-sm outline-none resize-none"
-            style={{
-              background: 'transparent',
-              color: '#c8c8f0',
-              caretColor: '#a78bfa',
-            }}
-          />
-          <div className="px-5 py-3 text-xs flex-shrink-0" style={{ color: '#5858a0', borderTop: '1px solid #1e1e38' }}>
-            Selected text → comment adds to notes
+          <div className="flex-1 px-4 py-4 overflow-hidden">
+            <textarea
+              value={currentNotes}
+              onChange={e => onUpdateNotes(company, e.target.value)}
+              placeholder="Add notes, talking points, or follow-up actions…"
+              autoFocus={notesOpen}
+              className="w-full h-full rounded-lg px-3.5 py-3 text-sm leading-relaxed outline-none resize-none transition-colors"
+              style={{ background: '#0d0d16', border: '1px solid #1e1e38', color: '#c8c8f0', caretColor: '#a78bfa' }}
+              onFocus={e => (e.currentTarget.style.borderColor = '#7c3aed')}
+              onBlur={e => (e.currentTarget.style.borderColor = '#1e1e38')}
+            />
           </div>
         </div>
       </div>

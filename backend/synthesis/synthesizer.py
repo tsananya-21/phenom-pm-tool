@@ -105,12 +105,10 @@ def _is_valid_output(data: dict) -> bool:
 
 
 def _parse_json(raw: str) -> dict:
+    """Clean and parse a model response into a dict. Cleaning only — callers
+    validate the shape separately via _is_valid_output()."""
     cleaned = _fix_trailing_commas(_extract_first_json_object(_strip_fences(raw)))
-    data = json.loads(cleaned)
-    unwrapped = _unwrap_if_needed(data)
-    if not _is_valid_output(unwrapped):
-        raise ValueError("Parsed JSON does not match expected output schema")
-    return unwrapped
+    return _unwrap_if_needed(json.loads(cleaned))
 
 
 _RETRY_SUFFIX = (
@@ -147,14 +145,6 @@ def _build_fallback(bundle: EvidenceBundle) -> dict:
                     if not re.search(r"\d", candidate):  # skip employee counts
                         industry_str = candidate
                         break
-
-    dim_template = {
-        "score": 50,
-        "currentState": "Insufficient data to synthesize — see raw signals.",
-        "evidence": [],
-        "gaps": ["Synthesis failed; review raw evidence bundle."],
-        "coverage": "inferred",
-    }
 
     def dim_data(dim: Dimension) -> dict:
         sigs = [s for s in bundle.signals if s.dimension == dim]
@@ -206,19 +196,14 @@ def synthesize(bundle: EvidenceBundle, provider: LLMProvider) -> dict:
     user = build_user_message(bundle)
     schema = build_output_schema()
 
-    raw = provider.generate(system, user, format_schema=schema)
+    # Initial attempt, then one retry with an explicit JSON reminder.
+    for message in (user, user + _RETRY_SUFFIX):
+        try:
+            data = _parse_json(provider.generate(system, message, format_schema=schema))
+            if _is_valid_output(data):
+                return data
+        except (json.JSONDecodeError, ValueError):
+            pass
 
-    try:
-        return _parse_json(raw)
-    except (json.JSONDecodeError, ValueError):
-        pass
-
-    # Retry once with explicit JSON reminder
-    try:
-        raw2 = provider.generate(system, user + _RETRY_SUFFIX, format_schema=schema)
-        return _parse_json(raw2)
-    except (json.JSONDecodeError, ValueError):
-        pass
-
-    # Both attempts failed — return minimal fallback from signals
+    # Both attempts failed — return a minimal fallback built from the signals.
     return _build_fallback(bundle)

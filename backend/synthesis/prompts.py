@@ -91,6 +91,8 @@ and use hedging language ("likely", "insufficient public data") — do NOT asser
 7. pitch.weaknesses: exactly 2 short bullets (≤15 words each) of concrete gaps or problems (backed by evidence).
 8. pitch.opportunities: exactly 2 plain strings, each "Product Name: short phrase" (≤15 words). No nested objects.
 9. hook and roi are one short sentence each. cta is one short phrase. No filler.
+10. RECENCY: base the analysis on recent evidence. The news/signals provided are from roughly the last 6 months — \
+prioritize current developments and do not present stale information as if it were current.
 """
 
 
@@ -99,9 +101,10 @@ def build_system_prompt() -> str:
     return SYSTEM_PROMPT_TEMPLATE.format(catalog=catalog)
 
 
-# JSON Schema mirroring the OUTPUT SCHEMA above. Passed to Ollama as `format` so
-# decoding is grammar-constrained to this exact shape — small models can no longer
-# echo input-bundle keys (e.g. "strong"/"thin") into the dimension objects.
+# JSON Schema mirroring the OUTPUT SCHEMA above. Used by providers that support
+# structured outputs / grammar-constrained decoding to lock the response to this
+# exact shape. (The pinned Anthropic SDK doesn't expose output_config yet, so it
+# currently documents the contract and is ready if that's enabled later.)
 def _dimension_schema() -> dict:
     return {
         "type": "object",

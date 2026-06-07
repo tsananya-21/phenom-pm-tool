@@ -14,16 +14,13 @@ class LLMProvider(ABC):
         """
         Return the model's text response (expected to be JSON).
 
-        format_schema: optional JSON Schema. Providers that support structured
-        outputs (e.g. Ollama) should constrain decoding to it; others may ignore it.
+        format_schema: optional JSON Schema for providers that support structured
+        outputs; providers that don't may ignore it.
         """
         ...
 
 
 def get_llm_provider(config) -> LLMProvider:
-    if config.llm_provider == "ollama":
-        from providers.ollama_provider import OllamaProvider
-        return OllamaProvider(config.ollama_base_url, config.ollama_model)
     if config.llm_provider == "anthropic":
         from providers.anthropic_provider import AnthropicProvider
         return AnthropicProvider(config.anthropic_api_key)

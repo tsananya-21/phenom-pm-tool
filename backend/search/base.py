@@ -13,9 +13,6 @@ class SearchProvider(ABC):
 
 
 def get_search_provider(config) -> SearchProvider:
-    if config.search_provider == "mock":
-        from search.mock_search import MockSearchProvider
-        return MockSearchProvider()
     if config.search_provider == "tavily":
         from search.tavily_search import TavilySearchProvider
         return TavilySearchProvider(config.tavily_api_key)

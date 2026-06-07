@@ -6,7 +6,11 @@ for each source type. All queries go through the SearchProvider abstraction.
 """
 from __future__ import annotations
 
+import datetime
 from dataclasses import dataclass, field
+
+# Only consider time-sensitive evidence (news) from roughly the last 6 months.
+RECENT_DAYS = 180
 
 
 @dataclass
@@ -14,6 +18,8 @@ class SearchQuery:
     query: str
     source_type: str   # job_posting | careers_site | linkedin | glassdoor | review | news | filing
     max_results: int = 5
+    topic: str = "general"      # "general" | "news"
+    days: int | None = None     # recency window in days; applied when topic == "news"
 
 
 @dataclass
@@ -50,12 +56,15 @@ def build_discovery_plan(company_name: str) -> DiscoveryPlan:
         SearchQuery(f'site:indeed.com/cmp "{n}" reviews', "review", max_results=3)
     )
 
-    # News
+    # News — restricted to roughly the last 6 months (recent signals only)
+    recent_cutoff = (datetime.date.today() - datetime.timedelta(days=RECENT_DAYS)).isoformat()
     plan.queries.append(
         SearchQuery(
-            f'"{n}" (CHRO OR CPO OR "Chief People Officer" OR layoffs OR hiring OR expansion OR funding) after:2023-01-01',
+            f'"{n}" (CHRO OR CPO OR "Chief People Officer" OR layoffs OR hiring OR expansion OR funding) after:{recent_cutoff}',
             "news",
             max_results=5,
+            topic="news",
+            days=RECENT_DAYS,
         )
     )
 

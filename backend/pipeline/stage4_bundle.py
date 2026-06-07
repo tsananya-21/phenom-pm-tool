@@ -6,7 +6,7 @@ the final EvidenceBundle. Deduplicates signals by (source_url, signal_type).
 """
 from __future__ import annotations
 
-from models.evidence import ATSDetection, EvidenceBundle, Signal
+from models.evidence import EvidenceBundle, Signal
 from ats.detector import detect, detect_from_urls
 from pipeline.stage5_coverage import score_coverage
 
@@ -65,5 +65,4 @@ def assemble_bundle(
         signals=unique_signals,
         ats=ats,
         coverage=coverage,
-        is_mock=False,
     )

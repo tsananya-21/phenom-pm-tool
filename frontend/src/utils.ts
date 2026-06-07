@@ -32,16 +32,25 @@ export function fitScoreColor(score: number): string {
   return 'text-red-400'
 }
 
+// Hex variants for SVG strokes / inline styles (mirror the classes above).
+export function fitScoreHex(score: number): string {
+  if (score >= 80) return '#34d399'
+  if (score >= 65) return '#60a5fa'
+  if (score >= 50) return '#fbbf24'
+  return '#f87171'
+}
+
+export function coverageHex(cov: string): string {
+  const c = cov?.toLowerCase()
+  if (c === 'high') return '#34d399'
+  if (c === 'medium') return '#fbbf24'
+  return '#f87171' // low / inferred
+}
+
 export function scoreTextColor(score: number): string {
   if (score >= 70) return 'text-emerald-400'
   if (score >= 40) return 'text-amber-400'
   return 'text-red-400'
-}
-
-export function scoreBarColor(score: number): string {
-  if (score >= 70) return 'bg-emerald-400'
-  if (score >= 40) return 'bg-amber-400'
-  return 'bg-red-400'
 }
 
 export function coverageLabel(cov: string): string {

@@ -32,7 +32,6 @@ export interface Bundle {
   signals: Signal[]
   ats: ATSDetection
   coverage: CoverageScore[]
-  is_mock: boolean
   fetched_at: string
 }
 

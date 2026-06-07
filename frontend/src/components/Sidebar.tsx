@@ -35,7 +35,7 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
           <button
             onClick={onToggle}
             title="Expand sidebar"
-            className="w-8 h-8 flex items-center justify-center text-[#3a3a6a] hover:text-violet-400 transition-colors flex-shrink-0"
+            className="w-8 h-8 flex items-center justify-center text-[#5a5a8a] hover:text-violet-400 transition-colors flex-shrink-0"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -43,7 +43,7 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
           <button
             onClick={onToggle}
             title="Research a company"
-            className="w-8 h-8 flex items-center justify-center text-[#3a3a6a] hover:text-violet-400 transition-colors flex-shrink-0"
+            className="w-8 h-8 flex items-center justify-center text-[#5a5a8a] hover:text-violet-400 transition-colors flex-shrink-0"
           >
             <Search className="w-3.5 h-3.5" />
           </button>
@@ -70,15 +70,21 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
       ) : (
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="px-5 py-5 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid #1a1a30' }}>
-            <div className="min-w-0">
-              <div className="text-sm font-bold text-white tracking-tight">Phenom PM</div>
-              <div className="text-[#4040880] text-xs mt-0.5" style={{ color: '#404080' }}>Intelligence Tool</div>
+          <div className="px-4 py-4 flex items-center justify-between flex-shrink-0" style={{ borderBottom: '1px solid #1a1a30' }}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}>
+                P
+              </span>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-white tracking-tight leading-tight">Phenom PM</div>
+                <div className="text-xs" style={{ color: '#5a5a8a' }}>Intelligence Tool</div>
+              </div>
             </div>
             <button
               onClick={onToggle}
               title="Collapse sidebar"
-              className="text-[#3a3a6a] hover:text-violet-400 transition-colors p-1 flex-shrink-0 ml-2"
+              className="text-[#5a5a8a] hover:text-violet-400 transition-colors p-1 flex-shrink-0 ml-2"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -91,8 +97,8 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder="Research a company..."
-                  className="flex-1 rounded px-2.5 py-1.5 text-xs text-white placeholder:text-[#3a3a6a] outline-none transition-colors"
+                  placeholder="Research a company…"
+                  className="flex-1 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#5a5a8a] outline-none transition-colors"
                   style={{ background: '#14142a', border: '1px solid #1e1e38' }}
                   onFocus={e => (e.target.style.borderColor = '#7c3aed')}
                   onBlur={e => (e.target.style.borderColor = '#1e1e38')}
@@ -100,7 +106,7 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="bg-violet-600 hover:bg-violet-500 disabled:opacity-30 text-white text-xs font-semibold px-2.5 py-1.5 rounded transition-colors flex-shrink-0"
+                  className="bg-violet-600 hover:bg-violet-500 disabled:opacity-30 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors flex-shrink-0"
                 >
                   →
                 </button>
@@ -109,37 +115,35 @@ export function Sidebar({ history, current, onSelect, collapsed, onToggle, onRes
           </div>
 
           {/* History */}
-          <div className="flex-1 overflow-y-auto py-2">
+          <div className="flex-1 overflow-y-auto py-2 px-2">
             {history.length === 0 ? (
-              <p className="px-5 py-6 text-xs leading-relaxed" style={{ color: '#3a3a6a' }}>
-                Researched companies<br />appear here.
+              <p className="px-3 py-6 text-xs leading-relaxed" style={{ color: '#5a5a8a' }}>
+                Researched companies appear here.
               </p>
             ) : (
               <>
-                <p className="px-5 pt-3 pb-1.5 text-xs" style={{ color: '#3a3a6a' }}>Recent</p>
+                <p className="px-3 pt-2 pb-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5a5a8a' }}>Recent</p>
                 {history.map(h => {
                   const isActive = current?.bundle.company_name === h.bundle.company_name
                   return (
                     <button
                       key={h.bundle.company_name}
                       onClick={() => onSelect(h)}
-                      className={`w-full text-left px-5 py-2.5 transition-colors ${
-                        isActive
-                          ? 'border-l-2 border-violet-500'
-                          : 'border-l-2 border-transparent hover:border-violet-800'
-                      }`}
-                      style={{ background: isActive ? 'rgba(109,40,217,0.12)' : undefined }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg mb-0.5 transition-colors"
+                      style={{ background: isActive ? 'rgba(124,58,237,0.14)' : 'transparent' }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = '#12121f' }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className={`text-sm truncate font-medium ${isActive ? 'text-violet-300' : 'text-[#8080c0]'}`}>
+                        <span className={`text-sm truncate font-medium ${isActive ? 'text-violet-200' : 'text-[#9090c8]'}`}>
                           {h.bundle.company_name}
                         </span>
-                        <span className={`text-xs font-bold tabular-nums flex-shrink-0 ${fitScoreColor(h.fitScore)}`}>
+                        <span className={`text-xs font-bold tabular-nums flex-shrink-0 px-1.5 py-0.5 rounded-md ${fitScoreColor(h.fitScore)}`}
+                              style={{ background: '#14142a' }}>
                           {h.fitScore}
                         </span>
                       </div>
-                      <div className="text-xs mt-0.5" style={{ color: '#3a3a6a' }}>{h.timestamp}</div>
-                      <div className="text-xs" style={{ color: '#3a3a6a' }}>{fitLabel(h.fitScore)}</div>
+                      <div className="text-xs mt-1" style={{ color: '#5a5a8a' }}>{fitLabel(h.fitScore)} · {h.timestamp}</div>
                     </button>
                   )
                 })}

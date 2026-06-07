@@ -50,7 +50,6 @@ class EvidenceBundle(BaseModel):
     signals: list[Signal] = Field(default_factory=list)
     ats: ATSDetection = Field(default_factory=ATSDetection)
     coverage: list[CoverageScore] = Field(default_factory=list)
-    is_mock: bool = False
     fetched_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def signals_for(self, dimension: Dimension) -> list[Signal]:

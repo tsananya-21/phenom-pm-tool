@@ -54,16 +54,3 @@ def test_nested_structure():
     assert result["score"] == 0.8
 
 
-def test_mock_bundle_builds_valid_user_message():
-    from search.mock_search import MockSearchProvider
-    from synthesis.prompts import build_user_message, build_system_prompt
-    import json
-
-    bundle = MockSearchProvider().search_company("HubSpot")
-    user_msg = build_user_message(bundle)
-    sys_prompt = build_system_prompt()
-
-    assert "HubSpot" in user_msg
-    assert "EVIDENCE BUNDLE" in user_msg
-    assert "Phenom" in sys_prompt
-    assert len(sys_prompt) > 500

@@ -15,9 +15,11 @@ from pydantic import BaseModel
 
 from config.settings import load_config
 from search.base import get_search_provider
-from search.mock_search import MockSearchProvider
 from providers.base import get_llm_provider
 from synthesis.synthesizer import synthesize
+
+# Suggested companies for the "Try" row on the home page.
+SUGGESTED_COMPANIES = ["Meta", "Apple", "Amazon", "Netflix", "Google", "Microsoft"]
 
 app = FastAPI(title="Phenom PM Intelligence API")
 
@@ -40,7 +42,7 @@ class ResearchRequest(BaseModel):
 
 @app.get("/api/companies")
 def available_companies():
-    return {"companies": MockSearchProvider.available_companies()}
+    return {"companies": SUGGESTED_COMPANIES}
 
 
 @app.post("/api/research")
