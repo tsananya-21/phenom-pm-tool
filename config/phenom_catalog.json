@@ -1,0 +1,356 @@
+{
+  "vendor": "Phenom",
+  "platform": "Phenom Applied AI — Intelligent Talent Experience Platform",
+  "platform_summary": "An enterprise talent intelligence system with AI engines, ontologies, and explainable AI (XAI) that delivers personalized experiences across the entire talent lifecycle: from candidate attraction through employee retention. Serves candidates, employees, recruiters, hiring managers, HR, talent marketers, and HRIT teams.",
+  "products": [
+
+    {
+      "name": "Phenom Career Site",
+      "category": "Candidate Experience",
+      "persona": ["candidate", "talent_marketer"],
+      "description": "AI-powered career site platform that personalizes the job-discovery experience for every visitor. Surfaces the most relevant jobs and dynamic content based on each candidate's skills, experience, interests, and location — helping them find and choose you faster. Includes a built-in talent community (passive candidate CRM capture), conversational chatbot, CMS for self-service content publishing, video hub for employee testimonials, and intelligent predictive search.",
+      "key_features": [
+        "AI-driven hyper-personalized job recommendations",
+        "Talent community for passive candidate capture and nurture",
+        "Integrated conversational chatbot (24/7 screening, FAQ, scheduling)",
+        "Self-service CMS — publish content in minutes without engineering",
+        "Video Hub — employee ambassador testimonials showcasing culture",
+        "Digital accessibility compliance",
+        "Intelligent predictive search with smart keyword matching"
+      ],
+      "customer_proof": "Regions Bank: 5,000 additional monthly applicants",
+      "best_for": ["employer_branding", "talent_community", "low_apply_conversion", "no_chatbot", "generic_career_site"],
+      "gaps_it_addresses": [
+        "generic careers site with no personalization",
+        "no talent community or CRM capture for passive candidates",
+        "low apply-conversion rate",
+        "no chatbot or virtual assistant on careers site",
+        "poor candidate experience / high bounce rate"
+      ]
+    },
+
+    {
+      "name": "Phenom Talent CRM",
+      "category": "Candidate Relationship Management",
+      "persona": ["recruiter", "talent_marketer"],
+      "description": "Comprehensive CRM that enables talent acquisition teams to build, engage, and track candidate pipelines. Uses AI fit scoring, dynamic list segmentation, and rediscovery algorithms to surface the best-fit talent from existing pipelines — including silver-medalists, past applicants, and talent community members. Won Best Use of AI in HR by The 2024 A.I. Awards.",
+      "key_features": [
+        "AI Fit Score — ranks candidates by skills, experience, and location match",
+        "Dynamic lists — auto-updating candidate segments for targeted campaigns",
+        "Rediscovery — re-engages past applicants when better-fit roles open",
+        "AI Insights — actionable intelligence to inform recruiter strategy",
+        "Pipeline health tracking across all open requisitions",
+        "Integration with Campaigns for automated email/SMS nurture"
+      ],
+      "customer_proof": "SEI: recruiter capacity scaled from 30–40 to 200+ requisitions per recruiter",
+      "best_for": ["passive_candidate_nurture", "silver_medalist_pipeline", "no_crm", "cold_pipelines"],
+      "gaps_it_addresses": [
+        "no CRM — losing passive candidates after each req closes",
+        "no rediscovery of past applicants",
+        "manual recruiter outreach with no pipeline visibility",
+        "cold talent pipelines requiring sourcing from scratch each cycle"
+      ]
+    },
+
+    {
+      "name": "Phenom Campaigns",
+      "category": "Talent Marketing",
+      "persona": ["recruiter", "talent_marketer"],
+      "description": "Automated email and multi-channel campaign tool to nurture, engage, and convert candidates at scale. Enables personalized employer brand storytelling and targeted role promotion to dynamic audience segments. Integrates with Talent CRM dynamic lists for precision targeting.",
+      "key_features": [
+        "Automated email nurture sequences",
+        "Personalized employer brand and job promotion content",
+        "Dynamic audience segments from Talent CRM",
+        "Campaign performance analytics",
+        "Integration with SMS and 1:1 Messaging"
+      ],
+      "customer_proof": "129% increase in internal applicants (major retailer); Brother International: 'delights candidates instead of making them feel like just another number'",
+      "best_for": ["candidate_nurture", "employer_branding", "passive_candidate_engagement"],
+      "gaps_it_addresses": [
+        "no automated candidate nurture after initial application",
+        "manual email outreach at scale",
+        "no personalized employer brand content delivery"
+      ]
+    },
+
+    {
+      "name": "Phenom Chatbot",
+      "category": "Candidate Engagement",
+      "persona": ["candidate", "recruiter"],
+      "description": "Conversational AI chatbot that automates candidate sourcing, screening, FAQ, and interview scheduling 24/7 on the careers site and via SMS. Guides job seekers to best-fit roles, answers questions instantly, and advances qualified candidates through the funnel — freeing recruiters from repetitive top-of-funnel work.",
+      "key_features": [
+        "AI-powered job recommendations in conversation",
+        "Automated prescreening and qualification",
+        "FAQ handling — instant answers about roles, benefits, process",
+        "Interview scheduling directly in chat",
+        "24/7 availability — never miss a candidate interaction",
+        "SMS channel support"
+      ],
+      "customer_proof": "Part of High-Volume Hiring solution achieving up to 90% efficiency gains",
+      "best_for": ["no_chatbot", "candidate_ghosting", "slow_response_time", "high_volume_hiring"],
+      "gaps_it_addresses": [
+        "no chatbot or assistant on careers site",
+        "slow or inconsistent candidate response time",
+        "high candidate drop-off before applying",
+        "recruiters overwhelmed by repetitive top-of-funnel screening"
+      ]
+    },
+
+    {
+      "name": "Phenom SMS & 1:1 Messaging",
+      "category": "Candidate Engagement",
+      "persona": ["recruiter", "candidate"],
+      "description": "Real-time multi-channel messaging (SMS, WhatsApp, and other apps) for direct, personalized recruiter-to-candidate outreach. Enables keyword-triggered pipeline growth campaigns, interview follow-ups, and offer communication at scale.",
+      "key_features": [
+        "SMS and multi-channel messaging (WhatsApp, iMessage)",
+        "Keyword campaigns for inbound pipeline growth",
+        "Automated follow-up sequences",
+        "One-to-one personalized recruiter messaging",
+        "Integration with Campaigns and Talent CRM"
+      ],
+      "customer_proof": "Electrolux: 78% time savings in scheduling",
+      "best_for": ["candidate_engagement", "scheduling", "high_volume_hiring"],
+      "gaps_it_addresses": [
+        "poor candidate response rate to email",
+        "slow interview scheduling",
+        "limited mobile-first candidate engagement"
+      ]
+    },
+
+    {
+      "name": "Phenom Automated Interview Scheduling",
+      "category": "Recruiter Productivity",
+      "persona": ["recruiter", "hiring_manager"],
+      "description": "Eliminates manual back-and-forth interview coordination with AI-driven scheduling automation. Integrates with recruiter and hiring manager calendars to automatically offer, book, and confirm interview slots — dramatically reducing time-to-interview.",
+      "key_features": [
+        "Multi-calendar integration (Outlook, Google)",
+        "Automated slot-offering and booking confirmation",
+        "Panel and multi-stage interview coordination",
+        "Integration with Chatbot and SMS for seamless candidate experience"
+      ],
+      "customer_proof": "Electrolux: 78% time savings in scheduling (combined with SMS)",
+      "best_for": ["scheduling_bottleneck", "long_time_to_interview", "recruiter_bandwidth"],
+      "gaps_it_addresses": [
+        "manual interview scheduling consuming recruiter time",
+        "long time-to-interview causing candidate drop-off",
+        "poor candidate experience from slow scheduling"
+      ]
+    },
+
+    {
+      "name": "Phenom X+ Screening",
+      "category": "Candidate Evaluation",
+      "persona": ["recruiter", "hiring_manager"],
+      "description": "Asynchronous video interview platform for scalable, structured candidate evaluation. Enables one-way video, audio, and text-based screening to assess talent at scale without scheduling overhead — accelerating evaluation while introducing more consistency and structure.",
+      "key_features": [
+        "One-way video, audio, and text interview formats",
+        "Structured question sets for consistency",
+        "AI-assisted response analysis",
+        "Shareable with hiring managers for collaborative evaluation"
+      ],
+      "best_for": ["inconsistent_screening", "high_volume_evaluation", "recruiter_bandwidth"],
+      "gaps_it_addresses": [
+        "inconsistent screening process across recruiters",
+        "high volume of candidates to evaluate with limited recruiter time",
+        "scheduling overhead for early-stage screening"
+      ]
+    },
+
+    {
+      "name": "Phenom Interview Intelligence",
+      "category": "Hiring Decisions",
+      "persona": ["recruiter", "hiring_manager"],
+      "description": "Records and analyzes interviews to support better, faster, and more consistent hiring decisions. Provides automatic transcription, candidate response insights, and cross-functional collaboration tools — reducing bias and improving signal quality.",
+      "key_features": [
+        "Automatic interview recording and transcription",
+        "Candidate response analysis and insights",
+        "Cross-functional collaboration and feedback collection",
+        "Integration with ATS workflow"
+      ],
+      "best_for": ["inconsistent_hiring_decisions", "bias_reduction", "interview_process_quality"],
+      "gaps_it_addresses": [
+        "inconsistent interview evaluation across hiring managers",
+        "lack of data on interview quality or candidate experience",
+        "poor collaboration between recruiters and hiring managers"
+      ]
+    },
+
+    {
+      "name": "Phenom High-Volume Hiring",
+      "category": "Talent Acquisition — Hourly & Frontline",
+      "persona": ["recruiter", "hiring_manager"],
+      "description": "End-to-end AI automation purpose-built for hourly, frontline, and seasonal hiring at scale. Combines career site chatbot, automated screening, one-way interviews, SMS outreach, pre-hire assessments, and hiring manager tools to fill roles up to 90% more efficiently. Addresses the unique challenges of high-turnover, high-volume roles where candidate experience and speed-to-offer are critical.",
+      "key_features": [
+        "Career site chatbot with location-aware job guidance",
+        "Automated screening and prescreening workflows",
+        "One-way video/audio/text interviews",
+        "SMS campaigns for role promotion and follow-up",
+        "Pre-hire assessments (quality + quantity balance)",
+        "Hiring manager evaluation tools",
+        "Automated offer workflows"
+      ],
+      "customer_proof": "Up to 90% more efficient staffing vs. legacy processes (Phenom benchmark); DHL Group: 40% faster time-to-hire",
+      "best_for": ["hourly_hiring", "frontline_workforce", "seasonal_ramp", "legacy_ats", "high_volume"],
+      "gaps_it_addresses": [
+        "slow time-to-fill for hourly and frontline roles",
+        "high candidate drop-off in legacy ATS apply flows",
+        "recruiter overwhelm from high-volume manual screening",
+        "inconsistent candidate experience across locations",
+        "legacy ATS (Taleo, iCIMS) not optimized for high-volume hiring"
+      ]
+    },
+
+    {
+      "name": "Phenom Talent Marketplace",
+      "category": "Employee Experience & Internal Mobility",
+      "persona": ["employee", "hr_manager", "talent_leader"],
+      "description": "Internal talent marketplace that connects employees with open roles, short-term gigs, learning opportunities, and mentors — all personalized by skills, interests, and career goals. Reduces attrition by making internal career paths visible and accessible. Generates a self-improving data engine: the more employees use it, the better the workforce intelligence becomes.",
+      "key_features": [
+        "AI-personalized internal job recommendations",
+        "Career Pathing — visual progression maps to future roles",
+        "Internal Gigs — short-term projects for upskilling and reskilling",
+        "Mentoring — AI-matched mentor/mentee connections",
+        "Learning integration — hyper-relevant on-demand learning suggestions",
+        "Employee Resource Groups (ERGs)",
+        "Skills gap identification and development planning"
+      ],
+      "customer_proof": "129% increase in internal applicants (major retailer); increased employee retention (retail case study)",
+      "best_for": ["internal_mobility", "retention", "skills_development", "attrition_risk"],
+      "gaps_it_addresses": [
+        "high voluntary attrition / employees leaving for external opportunities",
+        "no internal mobility program or career path visibility",
+        "employees unaware of open internal roles",
+        "skills gaps with no structured development pathways",
+        "lack of mentoring or ERG infrastructure"
+      ]
+    },
+
+    {
+      "name": "Phenom Career Pathing",
+      "category": "Employee Development",
+      "persona": ["employee", "hr_manager"],
+      "description": "Shows employees exactly where their career can take them within the organization — with AI-powered role recommendations, required skills visualizations, and progression paths aligned to both employee goals and company needs. Enables HR to deploy and manage a scalable job architecture without manual overhead.",
+      "key_features": [
+        "AI-recommended next roles based on skills and goals",
+        "Skills gap visualization between current and target roles",
+        "Career path branching (multiple paths, not a single ladder)",
+        "Skills Intelligence engine for HR to manage role frameworks",
+        "Integration with Learning for skills gap closure"
+      ],
+      "best_for": ["retention", "skills_development", "career_path_visibility"],
+      "gaps_it_addresses": [
+        "employees leaving because they can't see a future at the company",
+        "no structured career path framework",
+        "skills gaps not identified until performance reviews"
+      ]
+    },
+
+    {
+      "name": "Phenom Onboarding",
+      "category": "Onboarding",
+      "persona": ["hr_manager", "employee", "recruiter"],
+      "description": "Automated onboarding platform that accelerates new hire productivity with personalized journeys from offer acceptance through productive employment. Eliminates cumbersome paperwork, fragmented IT processes, and manual compliance tasks. Centralizes recruiters, hiring managers, and HR operations onto one platform with AI-powered insights.",
+      "key_features": [
+        "Personalized role-specific onboarding journeys",
+        "Intelligent data collection with automated verification",
+        "Digital compliance — auto-generates federal/state-specific documents",
+        "Background check vendor integration",
+        "AI-powered insights with natural language queries",
+        "Unified view across recruiter, hiring manager, and HR teams"
+      ],
+      "best_for": ["slow_onboarding_ramp", "compliance_risk", "fragmented_onboarding", "poor_new_hire_experience"],
+      "gaps_it_addresses": [
+        "slow or inconsistent onboarding experience for new hires",
+        "manual compliance document generation",
+        "fragmented onboarding across multiple disconnected systems",
+        "low new hire engagement and early attrition"
+      ]
+    },
+
+    {
+      "name": "Phenom Talent Analytics",
+      "category": "People Analytics",
+      "persona": ["recruiter", "talent_leader", "hr_manager"],
+      "description": "Real-time analytics platform providing visibility into the entire hiring funnel and candidate journey. Tracks career site visitor behavior, source attribution, campaign performance, pipeline conversion, and time-to-hire — enabling data-driven decisions about where to invest recruiting resources.",
+      "key_features": [
+        "Career site visitor behavior and forecasting",
+        "Source attribution — paid and organic channel ROI",
+        "Campaign performance (email, SMS, chatbot)",
+        "Hiring pipeline dashboards — funnel conversion and time-to-hire by role/department",
+        "Pre- and post-apply behavior analysis",
+        "Stakeholder reporting"
+      ],
+      "best_for": ["people_analytics", "source_roi", "pipeline_visibility", "manual_reporting"],
+      "gaps_it_addresses": [
+        "no visibility into TA funnel conversion or time-to-hire by source",
+        "inability to attribute which channels drive quality hires",
+        "manual reporting consuming TA team time",
+        "no data on career site candidate behavior"
+      ]
+    },
+
+    {
+      "name": "Phenom Employee Relationship Management (ERM)",
+      "category": "HR & Workforce Planning",
+      "persona": ["hr_manager"],
+      "description": "Proactively identifies organizational skills gaps and creates personalized development journeys for employees. Gives HR teams the data and tools to build high-performing teams, identify flight risks, and map succession — all from a centralized people data platform.",
+      "key_features": [
+        "Skills gap identification across the organization",
+        "Personalized employee development journey creation",
+        "Succession Planning — identify high-potential employees and map successors",
+        "People Manager dashboards for team performance",
+        "Integration with Talent Marketplace and Career Pathing"
+      ],
+      "best_for": ["succession_planning", "skills_gap", "workforce_planning", "retention"],
+      "gaps_it_addresses": [
+        "no succession planning infrastructure",
+        "organizational skills gaps only discovered reactively",
+        "flight risk not identified until resignation",
+        "HR decisions made without real-time workforce data"
+      ]
+    },
+
+    {
+      "name": "Phenom HRIT Experience (Flow Studio + Integrations)",
+      "category": "HR Technology & Integration",
+      "persona": ["hrit"],
+      "description": "No-code automation and integration layer that connects Phenom to the broader HR tech stack. Flow Studio lets HRIT teams build and streamline automations and forms across all HR systems without writing code. Includes pre-built integrations, Forms (no-code form builder), and Service Hub for self-service configuration management.",
+      "key_features": [
+        "Flow Studio — visual no-code automation builder for cross-system workflows",
+        "Forms — no-code form creation, deployment, and integration",
+        "Pre-built integrations with leading HCM/ATS/HRIS platforms",
+        "Service Hub — self-service integration and user management",
+        "API-driven connectivity"
+      ],
+      "best_for": ["hrit_integration", "workflow_automation", "no_code_hr_ops"],
+      "gaps_it_addresses": [
+        "fragmented HR tech stack requiring manual data transfer",
+        "custom integration development overhead",
+        "HRIT teams blocked by engineering dependency for workflow changes"
+      ]
+    },
+
+    {
+      "name": "Phenom X+ (Generative AI Layer)",
+      "category": "AI Platform",
+      "persona": ["recruiter", "hr_manager", "hrit", "candidate", "employee"],
+      "description": "Phenom's generative AI layer embedded across the entire platform. Powers intelligent content generation, AI Insights for recruiters, Fit Scores, personalization engine, and X+ Screening. Provides explainable AI (XAI) to give transparency into how recommendations and rankings are made — critical for compliance and bias reduction in hiring.",
+      "key_features": [
+        "Generative AI for job description writing and content creation",
+        "Explainable AI (XAI) — shows why a candidate or role was recommended",
+        "Fit Score — AI ranking of candidate-to-job match",
+        "Personalization engine — hyper-relevant experiences for every user",
+        "AI Insights — recruiter intelligence layer with actionable recommendations",
+        "Talent Discovery — AI-powered internal and external candidate sourcing"
+      ],
+      "best_for": ["ai_transformation", "recruiter_productivity", "bias_reduction", "personalization"],
+      "gaps_it_addresses": [
+        "manual job description writing and content creation",
+        "recruiters unable to prioritize best candidates at scale",
+        "lack of explainability in AI hiring tools (compliance risk)",
+        "inconsistent candidate and employee personalization"
+      ]
+    }
+
+  ]
+}
