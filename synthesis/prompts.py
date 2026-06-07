@@ -63,19 +63,19 @@ Use exactly this schema:
       "phenomProduct": "<exact product name from catalog>",
       "gap": "<the specific gap this addresses, as a plain sentence>",
       "evidenceRef": "<source_url from the evidence>",
-      "whatItDoes": "<2-3 natural sentences: what Phenom would concretely do for THIS company, not generic>",
-      "successMetric": "<specific, measurable outcome for this company, e.g. 'Cut time-to-fill for hourly roles from 3 weeks to under 7 days'>",
+      "whatItDoes": "<1-2 short sentences: what Phenom would concretely do for THIS company, not generic>",
+      "successMetric": "<one short line, ≤20 words: a specific measurable outcome, e.g. 'Cut time-to-fill for hourly roles from 3 weeks to under 7 days'>",
       "priority": "<high|medium|low>"
     }}
   ],
   "topOpportunity": "<1 punchy sentence naming the single strongest opening, specific to this company>",
   "pitch": {{
-    "hook":          "<1 sentence that opens with something specific about their situation — not a generic opener>",
-    "strengths":     ["<full sentence: one thing they're doing well, grounded in evidence>"],
-    "weaknesses":    ["<full sentence: one concrete gap or problem, grounded in evidence>"],
-    "opportunities": ["<Product Name>: one sentence on what it would change for them specifically>"],
-    "roi":           "<2 sentences with a specific metric or benchmark, not vague 'improve efficiency'>",
-    "cta":           "<specific, actionable next step — name a role, a workshop, a pilot>"
+    "hook":          "<1 short sentence, specific to their situation — not a generic opener>",
+    "strengths":     ["<short bullet, ≤15 words: something they're doing well, grounded in evidence>"],
+    "weaknesses":    ["<short bullet, ≤15 words: a concrete gap or problem, grounded in evidence>"],
+    "opportunities": ["<Product Name>: short phrase, ≤15 words, on what it would change>"],
+    "roi":           "<1 short sentence with a specific metric or benchmark>",
+    "cta":           "<short phrase: the next step — a role, a workshop, a pilot>"
   }}
 }}
 
@@ -86,10 +86,11 @@ Use exactly this schema:
 3. If a dimension's coverage_score is below 0.3 (is_thin=true), set coverage to "inferred" \
 and use hedging language ("likely", "insufficient public data") — do NOT assert confidence you don't have.
 4. solutionPrototypes must name exact products from the catalog above.
-5. Minimum 2 solutionPrototypes. Prioritize the gaps with the most evidence.
-6. pitch.strengths: 2–4 bullets of what the company is already doing well (backed by evidence).
-7. pitch.weaknesses: 2–4 bullets of concrete gaps or problems (backed by evidence).
-8. pitch.opportunities: 2–4 plain strings, each formatted as "Product Name: one sentence". No nested objects.
+5. Exactly 2-3 solutionPrototypes — only the highest-priority gaps with the most evidence. Do not list more.
+6. Keep the pitch very tight. pitch.strengths: exactly 2 short bullets (≤15 words each) of what the company is doing well (backed by evidence).
+7. pitch.weaknesses: exactly 2 short bullets (≤15 words each) of concrete gaps or problems (backed by evidence).
+8. pitch.opportunities: exactly 2 plain strings, each "Product Name: short phrase" (≤15 words). No nested objects.
+9. hook and roi are one short sentence each. cta is one short phrase. No filler.
 """
 
 
@@ -132,6 +133,7 @@ def build_output_schema() -> dict:
                     "type": "object",
                     "properties": {"period": {"type": "string"}, "amount": {"type": "string"}},
                     "required": ["period", "amount"],
+                    "additionalProperties": False,
                 },
             },
             "detectedStack": {
@@ -142,6 +144,7 @@ def build_output_schema() -> dict:
                     "source": {"type": ["string", "null"]},
                 },
                 "required": ["ats", "confidence", "source"],
+                "additionalProperties": False,
             },
             "dimensions": {
                 "type": "object",
@@ -162,6 +165,7 @@ def build_output_schema() -> dict:
                         "priority": {"type": "string", "enum": ["high", "medium", "low"]},
                     },
                     "required": ["phenomProduct", "gap", "whatItDoes", "successMetric", "priority"],
+                    "additionalProperties": False,
                 },
             },
             "topOpportunity": {"type": "string"},
@@ -176,12 +180,14 @@ def build_output_schema() -> dict:
                     "cta": {"type": "string"},
                 },
                 "required": ["hook", "strengths", "weaknesses", "opportunities", "roi", "cta"],
+                "additionalProperties": False,
             },
         },
         "required": [
             "company", "industry", "companySize", "description", "detectedStack",
             "dimensions", "solutionPrototypes", "topOpportunity", "pitch",
         ],
+        "additionalProperties": False,
     }
 
 

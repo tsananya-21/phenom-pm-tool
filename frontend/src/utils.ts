@@ -1,5 +1,10 @@
 import type { Analysis, PitchItem } from './types'
 
+// URL-safe slug for a company name, used as the :slug route param.
+export function slug(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
 export function to100(v: number | null | undefined): number {
   if (v == null) return 0
   return v > 1 ? Math.round(v) : Math.round(v * 100)

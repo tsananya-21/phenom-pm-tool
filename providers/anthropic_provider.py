@@ -1,12 +1,21 @@
 """
-AnthropicProvider — production stub.
+AnthropicProvider.
 
-Wired but NOT called in dev (PHENOM_LLM_PROVIDER=ollama by default).
 Set PHENOM_LLM_PROVIDER=anthropic + ANTHROPIC_API_KEY to activate.
 
-Prompt caching: the Phenom catalog block is a static, large system-prompt prefix —
-ideal for Anthropic cache_control ephemeral blocks (5-min TTL, up to 90% cost
-reduction on repeated calls). See the TODO comment in generate() below.
+Latency / cost optimizations applied in generate():
+  - Prompt caching: the system prompt (static Phenom catalog + instructions) is
+    sent as a cache_control ephemeral block, so repeated searches within the
+    5-min TTL skip re-processing it (~90% cheaper, lower latency on the prefix).
+  - Streaming: the response is streamed and reassembled via get_final_message(),
+    which avoids the SDK's non-streaming timeout guard on long generations.
+
+Note: format_schema is accepted for interface parity but not sent as
+output_config.format — that API requires a newer anthropic SDK than is pinned,
+and Claude already adheres to the schema described in the system prompt (the
+synthesizer's tolerant parser handles the result). Upgrade the SDK and add
+output_config={"format": {"type": "json_schema", "schema": format_schema}} if a
+hard schema guarantee is later required.
 """
 from __future__ import annotations
 
@@ -29,15 +38,24 @@ class AnthropicProvider(LLMProvider):
         user_message: str,
         format_schema: dict | None = None,
     ) -> str:
-        # format_schema is accepted for interface parity; Claude adheres to the
-        # schema described in the system prompt without grammar constraints.
-        # TODO: split system_prompt into [catalog_block (cacheable), instruction_block]
-        # and annotate catalog_block with cache_control={"type": "ephemeral"} to
-        # activate Anthropic prompt caching. Saves ~70-90% on repeated calls.
-        msg = self._client.messages.create(
-            model=self._model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
-        )
-        return msg.content[0].text
+        kwargs: dict = {
+            "model": self._model,
+            # The full analysis JSON runs ~4,150 tokens; a 4096 cap truncated it,
+            # producing invalid JSON that forced a second full generation (~2x time).
+            # Headroom lets it finish in one streamed pass.
+            "max_tokens": 8192,
+            # Cache the static system prefix (catalog + instructions) for repeat calls.
+            "system": [
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            "messages": [{"role": "user", "content": user_message}],
+        }
+
+        with self._client.messages.stream(**kwargs) as stream:
+            msg = stream.get_final_message()
+
+        return next((b.text for b in msg.content if b.type == "text"), "")

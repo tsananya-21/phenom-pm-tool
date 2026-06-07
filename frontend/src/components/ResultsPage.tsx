@@ -1,12 +1,12 @@
 import { type ReactNode, useState, useEffect, useRef } from 'react'
 import {
-  Info, ExternalLink,
+  ExternalLink,
   Briefcase, Users, Star, Newspaper, FileText, Globe,
   MessageSquarePlus,
 } from 'lucide-react'
 import type { ResearchResult, DimensionData, Prototype, PitchItem, Signal, RevenuePoint } from '../types'
 import {
-  to100, fitLabel, fitScoreColor, scoreTextColor,
+  to100, fitLabel, fitScoreColor,
   coverageLabel, bulletText,
 } from '../utils'
 
@@ -137,7 +137,6 @@ function Divider() {
 // ── Talent card ───────────────────────────────────────────────────────────────
 
 function TalentCard({ label, d, signals }: { label: string; d: DimensionData; signals: Signal[] }) {
-  const score = to100(d.score)
   const uniqSources = signals.reduce((acc, s) => {
     if (!acc.some(x => x.url === s.source_url)) acc.push({ url: s.source_url, type: s.source_type })
     return acc
@@ -149,12 +148,7 @@ function TalentCard({ label, d, signals }: { label: string; d: DimensionData; si
          onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.borderColor = C.borderLt)}
          onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.borderColor = C.border)}
     >
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-semibold" style={{ color: C.textBright }}>{label}</h3>
-        <span className={`text-sm font-bold tabular-nums ${scoreTextColor(score)}`}>
-          {score}<span className="font-normal text-xs" style={{ color: C.muted }}>/100</span>
-        </span>
-      </div>
+      <h3 className="text-sm font-semibold mb-1" style={{ color: C.textBright }}>{label}</h3>
       <p className="text-xs mb-3" style={{ color: C.dim }}>{coverageLabel(d.coverage)}</p>
       <p className="text-sm leading-relaxed" style={{ color: C.text }}>{d.currentState || 'No data.'}</p>
       {d.gaps && d.gaps.length > 0 && (
@@ -395,7 +389,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
   ]
 
   return (
-    <div className="max-w-3xl mx-auto px-8 py-10 slide-up">
+    <div className="max-w-5xl mx-auto px-8 py-10 slide-up">
 
       {/* Text selection popup — globally active on this page */}
       <SelectionPopup notes={notes} onNotesChange={onNotesChange} />
@@ -574,18 +568,7 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
 
       {/* Talent operations */}
       <section className="mb-8">
-        <div className="flex items-center gap-1.5 mb-4">
-          <h2 className="text-sm font-semibold" style={{ color: C.dim }}>Talent operations</h2>
-          <div className="relative group">
-            <Info className="w-3.5 h-3.5 cursor-help" style={{ color: C.muted }} />
-            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-20 w-64 pointer-events-none">
-              <div className="rounded-lg px-3 py-2 text-xs leading-relaxed shadow-xl"
-                   style={{ background: C.raised, border: `1px solid ${C.borderLt}`, color: C.text }}>
-                Scores reflect evidence confidence — how much public data was found to support each assessment.
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2 className="text-sm font-semibold mb-4" style={{ color: C.dim }}>Talent operations</h2>
         <div className="grid grid-cols-2 gap-3">
           {[...mainDims, ...extraDims].map(([key, label]) => {
             const d = dims[key]
@@ -632,32 +615,6 @@ export function ResultsPage({ result, notes, onNotesChange }: ResultsPageProps) 
             </li>
           )}
         </ul>
-      </section>
-
-      <Divider />
-
-      {/* Evidence coverage */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4" style={{ color: C.dim }}>
-          Evidence coverage
-          <span className="font-normal ml-2" style={{ color: C.border }}>· {bundle.signals.length} signals</span>
-        </h2>
-        <div className="grid grid-cols-3 gap-4 rounded-xl px-4 py-4"
-             style={{ background: C.surface, border: `1px solid ${C.border}` }}>
-          {bundle.coverage.map(cov => {
-            const pct = Math.round(cov.score * 100)
-            const label = cov.dimension.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-            return (
-              <div key={cov.dimension}>
-                <div className={`text-base font-bold tabular-nums ${scoreTextColor(pct)}`}>
-                  {pct}<span className="text-xs font-normal" style={{ color: C.muted }}>/100</span>
-                </div>
-                <div className="text-xs mt-0.5" style={{ color: C.dim }}>{label}</div>
-                <div className="text-xs" style={{ color: C.muted }}>{cov.signal_count} signals</div>
-              </div>
-            )
-          })}
-        </div>
       </section>
 
       <Divider />
